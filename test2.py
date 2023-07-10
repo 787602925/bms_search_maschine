@@ -20,8 +20,18 @@ def handle_http_requests(url2):
     return content
 
 
-# content = handle_http_requests('https://www.biomedcentral.com/journals')
-# soup = BeautifulSoup(content, 'html.parser')
-# target_li = soup.find(id='Biomedicine')
-# a_list = [a['href'] for a in target_li.select('li li a:nth-of-type(1)')]
-# print(a_list)
+html = handle_http_requests('https://www.biomedcentral.com/search?searchType=publisherSearch&sort=PubDate&page=1&query=t-test+p-value')
+soup = BeautifulSoup(html, 'html.parser')
+a_list = soup.find_all(name='a', itemprop='citation')
+url_list = ["https:" + a['href'] for a in a_list]
+
+print(url_list)
+
+# content = handle_http_requests(url)
+# soup = BeautifulSoup(content, "html.parser")
+# authors = [author.text for author in soup.find_all("span", class_='c-listing__authors-list')]
+# times = [pub_time.text for pub_time in soup.find_all(attrs={"itemprop": "datePublished"})]
+# links = get_all_article_links_in_a_page(url)
+# url_list = [get_url_without_property(url) + a['href'].replace('/articles', '') for a in a_list]
+# titles = [title.text for title in soup.find_all('a', attrs={'data-test': 'title-link'})]
+
