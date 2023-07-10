@@ -231,6 +231,8 @@ def binary_search_for_article(date, keyword, tag):
                        Miguel A. Moriñigo, Carmen Sarasquete and Enric Gisbert'}}
 
     """
+    # user specified date
+    d = datetime.strptime(date, '%d %B %Y')
     # get the number of total page
     url = f'https://www.biomedcentral.com/search?searchType=publisherSearch&sort=PubDate&page=1&query=t-test+{keyword}'
     html = handle_http_requests(url)
@@ -255,8 +257,6 @@ def binary_search_for_article(date, keyword, tag):
         d1 = datetime.strptime(times[0], '%d %B %Y')
         # the published date of the last article in one page
         d2 = datetime.strptime(times[-1], '%d %B %Y')
-        # user specified date
-        d = datetime.strptime(date, '%d %B %Y')
         if d == d1 == d2:
             if tag:
                 tag1 = 2
