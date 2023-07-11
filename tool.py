@@ -26,7 +26,7 @@ def get_sub_classification_urls(classification):
     :param the id of classification: string
            for Example: 'Criminology-and-Criminal-Justice'
     :return: dic of url of articles pagination
-             an element in the list: 'https://crimesciencejournal.biomedcentral.com/articles'
+             an element in the list: 'https://crimesciencejournal.biomedcentral.com/'
     """
 
     url = "https://www.biomedcentral.com/journals"
@@ -34,7 +34,7 @@ def get_sub_classification_urls(classification):
     soup = BeautifulSoup(content, "html.parser")
     target_li = soup.find(id=classification)
     a_list = target_li.select('li li a:nth-of-type(1)')
-    href_list = ['http:' + a['href'] + '/articles' for a in a_list]
+    href_list = ['http:' + a['href'] + '/' for a in a_list]
     return href_list
 
 
@@ -82,7 +82,10 @@ def get_all_articles(url):
     soup = BeautifulSoup(content, "html.parser")
     authors = [author.text for author in soup.find_all("span", class_='c-listing__authors-list')]
     times = [pub_time.text for pub_time in soup.find_all(attrs={"itemprop": "datePublished"})]
-    links = ["https:" + a['href'] for a in soup.find_all(name='a', itemprop='citation')]
+    if 'articles?' in url:  # classification search
+        links = [get_url_without_property(url).replace('/articles', '') + a['href'] for a in soup.find_all(name='a', itemprop='citation')]
+    else:  # global search
+        links = ["https:" + a['href'] for a in soup.find_all(name='a', itemprop='citation')]
     titles = [title.text for title in soup.find_all('a', attrs={'data-test': 'title-link'})]
     # len(authors) = len(times) = len(links) = len(titles) = 50
     for i in range(len(authors)):
@@ -162,10 +165,11 @@ def intersection(dict1, dict2):
     return results
 
 
-def get_articles_by_date_range(start_time, end_time, keyword):
+def get_articles_by_date_range(start_time, end_time, keyword, url="https://www.biomedcentral.com/"):
     """
     All articles with "t-test" and the keyword inputted by user within the specified date range
     will be found in this method
+    :param url: the first page of pagination. The default value belong to global search
     :param start_time: '01 January 2010'
     :param end_time: '01 February 2012'
     :param keyword: 'p-value'
@@ -185,8 +189,8 @@ def get_articles_by_date_range(start_time, end_time, keyword):
     }
     """
     results = {}
-    last_article = binary_search_for_article(start_time, keyword, False)
-    first_article = binary_search_for_article(end_time, keyword, True)
+    last_article = binary_search_for_article(start_time, keyword, False, url=url)
+    first_article = binary_search_for_article(end_time, keyword, True, url=url)
     first_page = int(first_article['page'])
     last_page = int(last_article['page'])
     end_date = datetime.strptime(end_time, '%d %B %Y')
@@ -194,8 +198,12 @@ def get_articles_by_date_range(start_time, end_time, keyword):
 
     # get valid articles in the first and the last page
     # Get the articles according to a date range in a page
-    url1 = f'https://www.biomedcentral.com/search?searchType=publisherSearch&sort=PubDate&page={first_page}&query=t-test+{keyword}'
-    url2 = f'https://www.biomedcentral.com/search?searchType=publisherSearch&sort=PubDate&page={last_page}&query=t-test+{keyword}'
+    if url == "https://www.biomedcentral.com/":  # global search
+        url1 = f'{url}search?searchType=publisherSearch&sort=PubDate&page={first_page}&query=t-test+{keyword}'
+        url2 = f'{url}search?searchType=publisherSearch&sort=PubDate&page={last_page}&query=t-test+{keyword}'
+    else:  # classification search
+        url1 = f'{url}articles?tab=keyword&searchType=journalSearch&sort=PubDate&query=t-test+{keyword}&page={first_page}'
+        url2 = f'{url}articles?tab=keyword&searchType=journalSearch&sort=PubDate&query=t-test+{keyword}&page={last_page}'
     x1 = get_all_articles(url1)
     x2 = get_all_articles(url2)
     merged_articles = {**x1, **x2}
@@ -206,18 +214,24 @@ def get_articles_by_date_range(start_time, end_time, keyword):
 
     # get articles exclude the first and the last page
     page_list = [i for i in range(first_page + 1, int(last_page))]
-    url_list = [
-        f"https://www.biomedcentral.com/search?searchType=publisherSearch&sort=PubDate&page={page}&query=t-test+{keyword}"
-        for page in page_list]
+    if url == "https://www.biomedcentral.com/":  # global search
+        url_list = [
+            f"{url}search?searchType=publisherSearch&sort=PubDate&page={page}&query=t-test+{keyword}"
+            for page in page_list]
+    else:  # classification search
+        url_list = [
+            f"{url}articles?tab=keyword&searchType=journalSearch&sort=PubDate&query=t-test+{keyword}&page={page}"
+            for page in page_list]
     for url in url_list:
         articles = get_all_articles(url)
         results.update(articles)
     return results
 
 
-def binary_search_for_article(date, keyword, tag):
+def binary_search_for_article(date, keyword, tag, url='https://www.biomedcentral.com/'):
     """
     Search for an article according to the specified date and on which page it appears
+    :param url:
     :param tag: if False ==> Looking for the last article published on or before that date
                 if True ==> Looking for the first article published on or after that date
     :param date: '01 January 2010'
@@ -234,12 +248,18 @@ def binary_search_for_article(date, keyword, tag):
     # user specified date
     d = datetime.strptime(date, '%d %B %Y')
     # get the number of total page
-    url = f'https://www.biomedcentral.com/search?searchType=publisherSearch&sort=PubDate&page=1&query=t-test+{keyword}'
-    html = handle_http_requests(url)
+    if url == "https://www.biomedcentral.com/":  # global search
+        url2 = f'{url}search?searchType=publisherSearch&sort=PubDate&page=1&query=t-test+{keyword}'
+    else:  # classification search
+        url2 = f'{url}articles?tab=keyword&searchType=journalSearch&sort=PubDate&query=t-test+{keyword}'
+    html = handle_http_requests(url2)
     soup = BeautifulSoup(html, 'html.parser')
     page_a = soup.find_all('a', class_='c-pagination__link')
     pages = [p.text.strip() for p in page_a]
-    page = pages[-2]
+    if len(pages) == 0:  # there are only one page in the search results pagination
+        page = 1
+    else:
+        page = pages[-2]
     article = {}
 
     # binary search
@@ -302,8 +322,11 @@ def binary_search_for_article(date, keyword, tag):
             break
 
     # get url
-    url = f'https://www.biomedcentral.com/search?searchType=publisherSearch&sort=PubDate&page={current_page}&query=t-test+{keyword}'
-    articles = get_all_articles(url)
+    if url == "https://www.biomedcentral.com/":
+        url2 = f'{url}search?searchType=publisherSearch&sort=PubDate&page={current_page}&query=t-test+{keyword}'
+    else:
+        url2 = f'{url}articles?tab=keyword&searchType=journalSearch&sort=PubDate&query=t-test+{keyword}&page={current_page}'
+    articles = get_all_articles(url2)
     if tag:  # get first article in date range
         for k, v in articles.items():
             published_time_format = datetime.strptime(v['published_time'], '%d %B %Y')
@@ -316,6 +339,12 @@ def binary_search_for_article(date, keyword, tag):
             if published_time_format >= d:
                 article = v
                 break
+
+    # output in console
+    if tag:
+        print(f"the first article published on or after {date} for url '{url}' is on page {page} found")
+    else:
+        print(f"the last article published on or before {date} for url '{url}' is on page {page} found")
     return {'page': current_page, 'article': article}
 
 
@@ -426,7 +455,7 @@ def generate_diagram(start_time, end_time, articles):
     time_stamp = {}
     if delta > 365:
         for i, t in articles.items():
-            date = datetime.strptime(t["published time"], '%d %B %Y')
+            date = datetime.strptime(t["published_time"], '%d %B %Y')
             year = str(date.year)
             if year in time_stamp:
                 time_stamp[year] += 1

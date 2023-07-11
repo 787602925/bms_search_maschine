@@ -29,39 +29,38 @@ def find_classification(url):
         pass
 
 
-def search_bmc(sort=True, classification='', lower_time='01 January 2010', upper_time=time.strftime('%d %B %Y', time.localtime()), keyword=''):
+def search_bmc(classification='', start_time='01 January 2010', end_time=time.strftime('%d %B %Y', time.localtime()), keyword=''):
     """
-    :param sort: boolean.  True --> newest first
     :param classification: string.  id of the classification. for example: "Criminology-and-Criminal-Justice"
-    :param lower_time: datetime.date
-    :param upper_time: datetime.date
+    :param start_time: datetime.date
+    :param end_time: datetime.date
     :param keyword: string
-    :return: dict
-             key: title of the article: string
-             value: a dict:
-                    1. 'title': string
-                    2. 'publish_time': string
-                    3. 'url': string
-                    4. 'authors': string
+    :return: results: dictionary
+            {'diagram':{'2017-05': 1, '2017-11': 2, '2017-02': 1, '2017-04': 2, '2017-10': 2},
+             'articles':{'BMP8A sustains spermatogenesis by activating both SMAD1/5/8 and SMAD2/3 in spermatogonia':
+                            {'title': 'BMP8A sustains spermatogenesis by activating both SMAD1/5/8 and SMAD2/3 in spermatogonia',
+                             'url': 'https://www.science.org/doi/10.1126/scisignal.aal1910',
+                             'pdf': 'https://www.science.org/doi/pdf/10.1126/scisignal.aal1910?download=true',
+                             'authors': 'by Fang-Ju Wu, Ting-Yu Lin, Li-Ying Sung, Wei-Fang Chang, Po-Chih Wu, Ching-Wei Luo',
+                             'published time': '02 May 2017'},
+                         'Arabidopsis ATXR2 deposits H3K36me3 at the promoters of LBD genes to facilitate cellular dedifferentiation':
+                            {'title': 'Arabidopsis ATXR2 deposits H3K36me3 at the promoters of LBD genes to facilitate cellular dedifferentiation',
+                            'url': 'https://www.science.org/doi/10.1126/scisignal.aan0316',
+                            'pdf': 'https://www.science.org/doi/pdf/10.1126/scisignal.aan0316?download=true',
+                            'authors': 'by Kyounghee Lee, Ok-Sun Park, Pil Joon Seo',
+                            'published time': '28 Nov 2017'}, ...
+                         }
+            }
     """
-
-    articles_t_test = {}
-    articles_keyword = {}
+    articles = {}
     classification_urls = tool.get_sub_classification_urls(classification)
-    # classification_url: http://actaneurocomms.biomedcentral.com/articles
     for classification_url in classification_urls:
-        articles_t_test.update(tool.search_keyword(classification_url, 't-test'))
-        articles_keyword.update(tool.search_keyword(classification_url, keyword))
+        all_articles = tool.get_articles_by_date_range(start_time, end_time, keyword, url=classification_url)
+        articles.update(tool.get_related_articles(all_articles, keyword))
         print("search for " + tool.get_url_without_property(classification_url) + " complete")
-    results1 = tool.intersection(articles_keyword, articles_t_test)
-    results2 = {}
-    format_lt = datetime.datetime.strptime(lower_time, '%d %B %Y')
-    format_ut = datetime.datetime.strptime(upper_time, '%d %B %Y')
-    for title, info in results1.items():
-        format_pt = datetime.datetime.strptime(info['published_time'], '%d %B %Y')
-        if format_lt <= format_pt <= format_ut:
-            results2[title] = info
-    return results2
+    diagram = tool.generate_diagram(start_time, end_time, articles)
+    results = tool.merge_diagram_articles(diagram, articles)
+    return results
 
 
 def search_bmc2(start_time='01 January 2010', end_time=time.strftime('%d %B %Y', time.localtime()), keyword=''):
@@ -69,14 +68,22 @@ def search_bmc2(start_time='01 January 2010', end_time=time.strftime('%d %B %Y',
     :param start_time: datetime.date
     :param end_time: datetime.date
     :param keyword: string
-    :return: dict
-             key: title of the article: string
-             value: a dict:
-                    1. 'title': string
-                    2. 'publish_time': string
-                    3. 'url': string
-                    4. 'authors': string
-                    5. 'pdf': string
+    :return: result: dictionary
+            {'diagram':{'2017-05': 1, '2017-11': 2, '2017-02': 1, '2017-04': 2, '2017-10': 2},
+             'articles':{'BMP8A sustains spermatogenesis by activating both SMAD1/5/8 and SMAD2/3 in spermatogonia':
+                            {'title': 'BMP8A sustains spermatogenesis by activating both SMAD1/5/8 and SMAD2/3 in spermatogonia',
+                             'url': 'https://www.science.org/doi/10.1126/scisignal.aal1910',
+                             'pdf': 'https://www.science.org/doi/pdf/10.1126/scisignal.aal1910?download=true',
+                             'authors': 'by Fang-Ju Wu, Ting-Yu Lin, Li-Ying Sung, Wei-Fang Chang, Po-Chih Wu, Ching-Wei Luo',
+                             'published time': '02 May 2017'},
+                         'Arabidopsis ATXR2 deposits H3K36me3 at the promoters of LBD genes to facilitate cellular dedifferentiation':
+                            {'title': 'Arabidopsis ATXR2 deposits H3K36me3 at the promoters of LBD genes to facilitate cellular dedifferentiation',
+                            'url': 'https://www.science.org/doi/10.1126/scisignal.aan0316',
+                            'pdf': 'https://www.science.org/doi/pdf/10.1126/scisignal.aan0316?download=true',
+                            'authors': 'by Kyounghee Lee, Ok-Sun Park, Pil Joon Seo',
+                            'published time': '28 Nov 2017'}, ...
+                         }
+            }
     """
     all_articles = tool.get_articles_by_date_range(start_time, end_time, keyword)
     articles = tool.get_related_articles(all_articles, keyword)

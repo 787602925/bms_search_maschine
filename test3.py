@@ -11,8 +11,10 @@ t2 = '10 November 2021'
 t3 = '19 June 2022'
 at = '6 May 2022'
 adate = datetime.datetime.strptime(t3, '%d %B %Y')
+x = 'March' in t1
+print(x)
 # print(adate)
 
-my_dict = {'a': 1, 'b': 2, 'c': 3}
-for dic in my_dict:
-    print(dic)
+# my_dict = {'a': 1, 'b': 2, 'c': 3}
+# for dic in my_dict:
+#     print(dic)
