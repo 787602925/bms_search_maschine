@@ -83,38 +83,16 @@ def get_all_articles(url):
     authors = [author.text for author in soup.find_all("span", class_='c-listing__authors-list')]
     times = [pub_time.text for pub_time in soup.find_all(attrs={"itemprop": "datePublished"})]
     if 'articles?' in url:  # classification search
-        links = [get_url_without_property(url).replace('/articles', '') + a['href'] for a in soup.find_all(name='a', itemprop='citation')]
+        links = [get_url_without_property(url).replace('/articles', '') + a['href'] for a in
+                 soup.find_all(name='a', itemprop='citation')]
     else:  # global search
         links = ["https:" + a['href'] for a in soup.find_all(name='a', itemprop='citation')]
+    pdfs = [li.replace('/articles', '/counter/pdf') + '.pdf' for li in links]
     titles = [title.text for title in soup.find_all('a', attrs={'data-test': 'title-link'})]
     # len(authors) = len(times) = len(links) = len(titles) = 50
     for i in range(len(authors)):
-        results[titles[i]] = {'title': titles[i], 'published_time': times[i], 'url': links[i], 'authors': authors[i]}
+        results[titles[i]] = {'title': titles[i], 'published_time': times[i], 'url': links[i], 'pdf': pdfs[i], 'authors': authors[i]}
     return results
-
-
-# can optimize the calculate
-# def get_link_of_valid_page(url, lower_time, upper_time):
-#     """
-#     give the article links from lower_time to upper_time
-#     :param url: a concrete link that from a classification pagination
-#            for Example: https://actaneurocomms.biomedcentral.com/articles?tab=keyword&searchType=journalSearch&sort=PubDate&query=t-test&page=2
-#     :param lower_time: string 03/01/2023
-#     :param upper_time: string 03/03/2023
-#     :return: [string]
-#     """
-#     date1 = datetime.datetime.strptime(lower_time, '%m/%d/%Y')
-#     date2 = datetime.datetime.strptime(upper_time, '%m/%d/%Y')
-#     pages = get_links_of_all_pages(url)
-#     valid_pages = []
-#     for page in pages:
-#         last_time = get_last_article_time(page)
-#         first_time = get_first_article_time(page)
-#         if date2 > last_time:
-#             continue
-#         elif date1 < last_time & date2 > last_time & date2 < first_time:
-#             first_page = page
-#         elif
 
 
 def search_keyword(url, keyword):

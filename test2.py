@@ -20,12 +20,12 @@ def handle_http_requests(url2):
     return content
 
 
-html = handle_http_requests('https://www.biomedcentral.com/search?searchType=publisherSearch&sort=PubDate&page=1&query=t-test+p-value')
-soup = BeautifulSoup(html, 'html.parser')
-a_list = soup.find_all(name='a', itemprop='citation')
-url_list = ["https:" + a['href'] for a in a_list]
+html = handle_http_requests('https://journals.plos.org/plosone/search?filterJournals=PLoSONE&filterJournals=PLoSGenetics&filterJournals=PLoSPathogens&filterJournals=PLoSCompBiol&filterJournals=PLoSBiology&filterJournals=PLoSNTD&filterJournals=PLoSMedicine&filterJournals=PLoSClinicalTrials&filterSubjects=Biochemistry&q=t-test&sortOrder=DATE_NEWEST_FIRST&page=1&utm_content=a&utm_campaign=ENG-467')
+html2 = handle_http_requests('https://journals.plos.org/plospathogens/article?id=10.1371/journal.ppat.1011531')
+html3 = handle_http_requests('https://journals.plos.org/plosbiology/search?filterJournals=PLoSBiology&q=t-test&utm_content=a&utm_campaign=ENG-467')
+html4 = handle_http_requests('https://www.science.org/action/doSearch?AllField=t-test')
 
-print(url_list)
+print(html3)
 
 # content = handle_http_requests(url)
 # soup = BeautifulSoup(content, "html.parser")
