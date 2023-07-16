@@ -257,6 +257,7 @@ def binary_search_for_article(date, keyword, tag, url='https://www.biomedcentral
         d2 = datetime.strptime(times[-1], '%d %B %Y')
         if current_page == page or current_page == 1:
             break
+        # 1
         if d == d1 == d2:
             if tag:
                 tag1 = 2
@@ -264,12 +265,14 @@ def binary_search_for_article(date, keyword, tag, url='https://www.biomedcentral
             else:
                 tag1 = 1
                 current_page += 1
+        # 2
         elif d == d1 > d2:
             if tag:
                 tag1 = 2
                 current_page -= 1
             else:
                 break
+        # 3
         elif d > d1 >= d2:
             # the particular situation: for example:
             # the last article of page 50: 07 Juli; the last article of page 51: 06 Juli;
@@ -277,18 +280,29 @@ def binary_search_for_article(date, keyword, tag, url='https://www.biomedcentral
             if tag1 == 1:
                 current_page -= 1
                 break
+            # the particular situation: for example:
+            # the last article of page 50: 07 Juli; the last article of page 51: 01 Juli;
+            # target date: 04 Juli;
+            elif abs(high-low) == 1:
+                if tag:
+                    break
+                else:
+                    current_page -= 1
+                    break
             else:
                 high = current_page - 1
                 current_page = (low + high) // 2
-
+        # 4
         elif d1 > d > d2:
             break
+        # 5
         elif d1 > d2 == d:
             if tag:
                 break
             else:
                 tag1 = 1
                 current_page += 1
+        # 6
         elif d1 >= d2 > d:
             # the particular situation: for example:
             # the last article of page 50: 07 Juli; the first article of page 51: 06 Juli;
@@ -296,6 +310,15 @@ def binary_search_for_article(date, keyword, tag, url='https://www.biomedcentral
             if tag1 == 2:
                 current_page += 1
                 break
+            # the particular situation: for example:
+            # the last article of page 50: 07 Juli; the last article of page 51: 01 Juli;
+            # target date: 04 Juli;
+            elif abs(high-low) == 1:
+                if tag:
+                    current_page += 1
+                    break
+                else:
+                    break
             else:
                 low = current_page + 1
                 current_page = (low + high) // 2
@@ -324,9 +347,9 @@ def binary_search_for_article(date, keyword, tag, url='https://www.biomedcentral
 
     # output in console
     if tag:
-        print(f"the first article published on or after {date} for url '{url}' is on page {page} found")
+        print(f"the first article published on or after {date} for url '{url}' is found on page {page}")
     else:
-        print(f"the last article published on or before {date} for url '{url}' is on page {page} found")
+        print(f"the last article published on or before {date} for url '{url}' is found on page {page}")
     return {'page': current_page, 'article': article}
 
 
