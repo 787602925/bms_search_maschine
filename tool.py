@@ -255,6 +255,8 @@ def binary_search_for_article(date, keyword, tag, url='https://www.biomedcentral
         d1 = datetime.strptime(times[0], '%d %B %Y')
         # the published date of the last article in one page
         d2 = datetime.strptime(times[-1], '%d %B %Y')
+        if current_page == page or current_page == 1:
+            break
         if d == d1 == d2:
             if tag:
                 tag1 = 2
@@ -264,6 +266,7 @@ def binary_search_for_article(date, keyword, tag, url='https://www.biomedcentral
                 current_page += 1
         elif d == d1 > d2:
             if tag:
+                tag1 = 2
                 current_page -= 1
             else:
                 break
@@ -284,6 +287,7 @@ def binary_search_for_article(date, keyword, tag, url='https://www.biomedcentral
             if tag:
                 break
             else:
+                tag1 = 1
                 current_page += 1
         elif d1 >= d2 > d:
             # the particular situation: for example:
@@ -410,7 +414,7 @@ def regex_keyword(string, regex=re.compile(r'\b[A-Za-z]\b', re.IGNORECASE)):
         last_index = index[1]
     new_string += string[last_index:]
     result_string = new_string.replace(" ", "[\\s]*")
-    result_string = '\\b' + result_string + '\\b'
+    result_string = '\\b' + result_string + 's?\\b'
 
     # \b(<\w+>)*n(</\w+>)*[\s]*=[\s]*3\b
     return result_string
