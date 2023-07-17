@@ -66,7 +66,7 @@ def search_bmc(classification='', start_time='01/01/2022', end_time=time.strftim
     return results
 
 
-def search_bmc2(start_time='01 January 2010', end_time=time.strftime('%d %B %Y', time.localtime()), keyword=''):
+def search_bmc2(start_time='01/01/2022', end_time=time.strftime('%m/%d/%Y', time.localtime()), keyword=''):
     """
     global search
     :param start_time: datetime.date
