@@ -72,7 +72,7 @@ def get_url_without_property(url):
 
 def get_all_articles(url):
     """
-    get the article title, Publish time, authors, links within a page
+    get the article title, Published time, authors, URL and URL of pdf within a page
     :param url: the link of pagination
            for example: https://biotechnologyforbiofuels.biomedcentral.com/articles?tab=keyword&searchType=journalSearch&sort=Relevance&query=t-test&page=2
     :return: a dictionary results. results[titles[i]] = {'title': titles[i], 'published_time': times[i], 'url': links[i], 'authors': authors[i]}

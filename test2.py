@@ -20,12 +20,8 @@ def handle_http_requests(url2):
     return content
 
 
-html = handle_http_requests('https://journals.plos.org/plosone/search?filterJournals=PLoSONE&filterJournals=PLoSGenetics&filterJournals=PLoSPathogens&filterJournals=PLoSCompBiol&filterJournals=PLoSBiology&filterJournals=PLoSNTD&filterJournals=PLoSMedicine&filterJournals=PLoSClinicalTrials&filterSubjects=Biochemistry&q=t-test&sortOrder=DATE_NEWEST_FIRST&page=1&utm_content=a&utm_campaign=ENG-467')
-html2 = handle_http_requests('https://journals.plos.org/plospathogens/article?id=10.1371/journal.ppat.1011531')
-html3 = handle_http_requests('https://journals.plos.org/plosbiology/search?filterJournals=PLoSBiology&q=t-test&utm_content=a&utm_campaign=ENG-467')
-html4 = handle_http_requests('https://www.science.org/action/doSearch?AllField=t-test')
-
-print(html3)
+articles = tool.get_all_articles('https://biotechnologyforbiofuels.biomedcentral.com/articles?tab=keyword&searchType=journalSearch&sort=Relevance&query=t-test+p-value&page=2')
+print(articles)
 
 # content = handle_http_requests(url)
 # soup = BeautifulSoup(content, "html.parser")
